@@ -3,6 +3,7 @@
 import sys
 import os
 import logging
+import calendar
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -21,6 +22,25 @@ import time
 from PIL import Image,ImageDraw,ImageFont
 import traceback
 
+def minutechanged(oldminute):
+    currentminute = time.localtime()[4]
+
+    if ((currentminute - oldminute) >= 1) or (oldminute == 59 and currentminute == 0):
+        return True
+    else:
+        return False
+
+def monthchanged(oldtime):
+    currentyear = time.localtime()[0]
+    currentmonth = time.localtime()[1]
+    oldyear = oldtime[0]
+    oldmonth = oldtime[1]
+
+    if ((currentmonth != oldmonth) or (currentyear != oldyear)):
+        return True
+    else:
+        return False
+
 try:
 
     logging.info("Raspberry Pi LCARS clock for 2.7in WaveShare e-Ink Display")
@@ -35,12 +55,11 @@ try:
     epd.Clear(white)
 
     logging.debug("Loading Fonts")
-    fontOswald_36 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 36, 0)
-    fontSwiss911_36 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 36, 1)
-    fontSwiss911_24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24, 1)
-    fontSwiss911_18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18, 1)
-    fontSwiss911_12 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 12, 1)
-    fontFutura_12 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 12, 2)
+    fontSwiss911_36 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 36, 0)
+    fontSwiss911_24 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24, 0)
+    fontSwiss911_18 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18, 0)
+    fontSwiss911_12 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 12, 0)
+    fontFixedWidth_12 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 12, 1)
 
 # Horizontal orientation
     logging.debug("Setting horizontal orientation")
@@ -51,38 +70,50 @@ try:
     # top graphics
     drawImage.rectangle((0, 0, 35, 15), fill = black )    # vertical bar top segment
     drawImage.rectangle((0, 18, 35, 33), fill = black )    # vertical bar segment 2
-    drawImage.text((15, 3), "TIME", font = fontFutura_12, fill = white )
+    #drawImage.text((15, 3), "TIME", font = fontFixedWidth_12, fill = white )
     drawImage.rectangle((0, 36, 35, 51), fill = black )    # vertical bar segment 3
-    drawImage.text((15, 21), "DATE", font = fontFutura_12, fill = white )
+    #drawImage.text((15, 21), "DATE", font = fontFixedWidth_12, fill = white )
     drawImage.ellipse((0, 48, 35, 60), fill = black )    # bottom outside corner
     drawImage.rectangle((18, 51, 130, 60), fill = black )    # horiz bar segment 1
-    drawImage.text((53, 50), "TIME", font = fontFutura_12, fill = white )
-    drawImage.rectangle((133, 51, 245 , 60), fill = black )    # horiz bar segment 2
-    drawImage.text((143, 50), "DATE", font = fontFutura_12, fill = white )
+    drawImage.text((53, 51), "TIME", font = fontFixedWidth_12, fill = white )
+    drawImage.rectangle((133, 51, 245, 60), fill = black )    # horiz bar segment 2
+    drawImage.text((143, 51), "DATE", font = fontFixedWidth_12, fill = white )
     drawImage.ellipse((epd.height-10, 52, epd.height, 60), fill = black )    # horiz bar endcap
     drawImage.rectangle((248, 51, epd.height-6, 60), fill = black )    # horiz bar segment 3
-    epd.display(epd.getbuffer(HImage))
+#    epd.display(epd.getbuffer(HImage))
 
     # bottom graphics
     drawImage.ellipse((0, 65, 35, 74), fill = black )    # top outside corner
-    drawImage.rectangle((18, 65, epd.height-6, 74), fill = black )    # horizontal bar
+    drawImage.rectangle((18, 65, 245, 74), fill = black )    # horizontal bar 1
+    drawImage.rectangle((248, 65, epd.height-6, 74), fill = black )    # horizontal bar 2
     drawImage.ellipse((epd.height-10, 66, epd.height, 74), fill = black)    # end cap for horizontal bar
-    drawImage.text((53, 64), "CALENDAR", font = fontFutura_12, fill = white )    # Horizontal bar label
+    drawImage.text((53, 65), "CALENDAR", font = fontFixedWidth_12, fill = white )    # Horizontal bar label
     drawImage.rectangle((0, 71, 35, epd.width), fill = black ) # vertical bar
     epd.display(epd.getbuffer(HImage))
 
-#start the main infinite loop here
-# Time computations
-    now = time.localtime(time.time())
-# put a (if now.minute = oldnow.minute) loop here that sleeps for 1 second
-    fmttime = time.strftime("%I:%M", now)
-    fmtampm = time.strftime("%p", now)
-    fmtdate = time.strftime("%a %b %d", now)
-    drawImage.text((50, 5), fmttime, font = fontSwiss911_36, fill = black)
-    drawImage.text((108, 10), fmtampm, font = fontSwiss911_18, fill = black)
-    drawImage.text((140, 5), fmtdate, font = fontSwiss911_36, fill = black)
-    epd.display(epd.getbuffer(HImage))
-# end the main loop here
+    now = time.localtime(0)
+
+    while True:
+        last = now
+        now = time.localtime()
+        if minutechanged(last[4]):
+            fmttime = time.strftime("%I:%M", now)
+            fmtampm = time.strftime("%p", now)
+            fmtdate = time.strftime("%a %b %d", now)
+            drawImage.rectangle((36, 0, epd.height, 50), fill = white )
+            drawImage.text((50, 5), fmttime, font = fontSwiss911_36, fill = black)
+            drawImage.text((108, 10), fmtampm, font = fontSwiss911_18, fill = black)
+            drawImage.text((140, 5), fmtdate, font = fontSwiss911_36, fill = black)
+            if monthchanged(last):
+                drawImage.rectangle((36, 75, epd.height, epd.width), fill = white )
+                c = calendar.TextCalendar(calendar.SUNDAY)
+                logging.debug("Now[0] = %s, Now[1] %s", now[0], now[1])
+                strcal = c.formatmonth( now[0], now[1] )
+                logging.debug("%s", strcal)
+                drawImage.text((50, 80), strcal, font = fontFixedWidth_12, spacing = 3, fill = black )
+            epd.display(epd.getbuffer(HImage))
+        else:
+            time.sleep(1)
 
     logging.debug("Clear and sleep")
 #    epd.Clear(white)
