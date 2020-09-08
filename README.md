@@ -3,12 +3,12 @@ LCARS (Star Trek TNG) themed clock/calendar for WaveShare e-ink or e-paper displ
 
 Directory structure:
 
-project root
-   pic directory
-      Font.ttc
-   lib directory
-      epd library
-   rpi-clock.py
+- project root
+  - pic directory
+    - Font.ttc
+  - lib directory
+    - epd library
+  - rpi-clock.py
    
 I just duplicated the python directory from the WaveShare package:
 https://github.com/waveshare/e-Paper/tree/master/RaspberryPi%26JetsonNano/python
