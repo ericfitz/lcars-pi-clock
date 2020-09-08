@@ -19,4 +19,4 @@ https://github.com/waveshare/e-Paper/tree/master/RaspberryPi%26JetsonNano/python
 The code is currently configured specifically to use the 2.7" e-Paper hat:
 https://www.waveshare.com/wiki/2.7inch_e-Paper_HAT
 
-![](lcars-development-day1.jpg?raw=true)
+![](lcars-eink-pi-clock.jpg?raw=true)
